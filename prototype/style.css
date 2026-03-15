@@ -1,0 +1,315 @@
+@layer utilities {
+    .cyber-bg {
+        background: 
+            linear-gradient(rgba(5, 5, 5, 0.9), rgba(5, 5, 5, 0.9)),
+            linear-gradient(90deg, rgba(0,243,255,0.03) 1px, transparent 1px),
+            linear-gradient(rgba(0,243,255,0.03) 1px, transparent 1px);
+        background-size: 100% 100%, 40px 40px, 40px 40px;
+    }
+    
+    .cyber-panel {
+        background: rgba(10, 15, 25, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 243, 255, 0.15);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 243, 255, 0.05);
+    }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 243, 255, 0.3);
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 243, 255, 0.6);
+}
+
+/* Glitch Effect */
+.glitch-text {
+    position: relative;
+    display: inline-block;
+}
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+}
+.glitch-text::before {
+    left: 2px;
+    text-shadow: -1px 0 #ff003c;
+    clip: rect(24px, 550px, 90px, 0);
+    animation: glitch-anim 3s infinite linear alternate-reverse;
+}
+.glitch-text::after {
+    left: -2px;
+    text-shadow: -1px 0 #00f3ff;
+    clip: rect(85px, 550px, 140px, 0);
+    animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+    0% { clip: rect(10px, 9999px, 83px, 0); }
+    20% { clip: rect(61px, 9999px, 13px, 0); }
+    40% { clip: rect(33px, 9999px, 96px, 0); }
+    60% { clip: rect(86px, 9999px, 42px, 0); }
+    80% { clip: rect(2px, 9999px, 39px, 0); }
+    100% { clip: rect(78px, 9999px, 11px, 0); }
+}
+@keyframes glitch-anim-2 {
+    0% { clip: rect(65px, 9999px, 100px, 0); }
+    20% { clip: rect(11px, 9999px, 73px, 0); }
+    40% { clip: rect(94px, 9999px, 5px, 0); }
+    60% { clip: rect(32px, 9999px, 44px, 0); }
+    80% { clip: rect(88px, 9999px, 66px, 0); }
+    100% { clip: rect(23px, 9999px, 81px, 0); }
+}
+
+/* Chat Message Anim */
+.message-appear {
+    animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpFade {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Sector Navigation */
+.sector-card {
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.4) 100%);
+    overflow: hidden;
+    min-height: 180px; /* Ensure enough height for text */
+}
+
+/* Remove text truncation and increase visibility */
+.sector-card .line-clamp-2,
+.sector-card .text-xs,
+#sector-tooltip .text-xs {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    font-size: 0.8rem; /* Equivalent to text-sm/xs gap */
+}
+
+.sector-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.15;
+    transition: opacity 0.4s ease, transform 0.6s ease;
+    z-index: -1;
+}
+
+.sector-card:hover::before {
+    opacity: 0.35;
+    transform: scale(1.1);
+}
+
+.sector-card:hover {
+    border-color: rgba(0, 243, 255, 0.5);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px -10px rgba(0, 243, 255, 0.3);
+}
+
+.sector-card.locked {
+    filter: grayscale(1) opacity(0.5);
+    cursor: not-allowed;
+}
+
+#sector-tooltip {
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateY(10px);
+}
+
+#sector-tooltip:not(.opacity-0) {
+    transform: translateY(0);
+}
+
+/* Placeholder Boss Image Style */
+.placeholder-avatar {
+    background: radial-gradient(circle at center, rgba(255, 0, 60, 0.2) 0%, transparent 70%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.placeholder-avatar::after {
+    content: '👤';
+    font-size: 2rem;
+    filter: drop-shadow(0 0 5px rgba(255, 0, 60, 0.5));
+}
+
+/* Card Styles */
+.stage-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 0, 60, 0.1);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.stage-card:hover {
+    background: rgba(255, 0, 60, 0.05);
+    border-color: rgba(255, 0, 60, 0.5);
+    transform: scale(1.02);
+    box-shadow: 0 10px 30px -10px rgba(255, 0, 60, 0.3);
+}
+
+/* Remove text truncation and increase visibility for stage cards */
+.stage-card .line-clamp-1,
+.stage-card .text-\[10px\],
+#stage-tooltip .text-xs,
+#stage-tooltip .text-\[11px\] {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    font-size: 0.82rem;
+}
+
+#stage-tooltip {
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateY(10px);
+}
+
+#stage-tooltip:not(.opacity-0) {
+    transform: translateY(0);
+}
+
+/* Specific placeholder for stage targets */
+.placeholder-target::after {
+    content: '🎯';
+    font-size: 2.5rem;
+    filter: drop-shadow(0 0 8px rgba(0, 243, 255, 0.6));
+}
+
+/* Result Modals & Buttons */
+#result-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+#quest-success-modal.active,
+#quest-failure-modal.active {
+    display: flex;
+    transform: scale(1);
+}
+
+#quest-success-modal,
+#quest-failure-modal {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.reward-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px 15px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.reward-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 243, 255, 0.3);
+    transform: translateX(5px);
+}
+
+/* Modal Glitch Animation for Failure */
+@keyframes failure-glitch {
+    0% { transform: translate(0); text-shadow: none; }
+    20% { transform: translate(-2px, 2px); text-shadow: 2px 0 #ff003c; }
+    40% { transform: translate(-2px, -2px); text-shadow: -2px 0 #00f3ff; }
+    60% { transform: translate(2px, 2px); text-shadow: 2px 0 #fcee0a; }
+    80% { transform: translate(2px, -2px); text-shadow: -2px 0 #ff003c; }
+    100% { transform: translate(0); text-shadow: none; }
+}
+
+#quest-failure-modal .glitch-text {
+    animation: failure-glitch 0.2s infinite;
+    animation-play-state: paused;
+}
+
+#quest-failure-modal.active .glitch-text {
+    animation-play-state: running;
+}
+
+/* New UI Elements for Enhanced Result Modals */
+.gauge-bar-container {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 9999px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.success-glow {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+.failure-glow {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Transitions for details panel */
+#failure-details-panel {
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+#failure-details-panel.active {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 10px;
+}
+
+#details-toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+#details-toggle-icon.active {
+    transform: rotate(45deg);
+}
+
+/* Success Unlock Animation */
+@keyframes unlock-pulse {
+    0% { border-color: rgba(0, 243, 255, 0.3); box-shadow: 0 0 5px rgba(0, 243, 255, 0.1); }
+    50% { border-color: rgba(0, 243, 255, 0.8); box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }
+    100% { border-color: rgba(0, 243, 255, 0.3); box-shadow: 0 0 5px rgba(0, 243, 255, 0.1); }
+}
+
+#success-unlock-notice {
+    animation: unlock-pulse 2s infinite ease-in-out;
+}

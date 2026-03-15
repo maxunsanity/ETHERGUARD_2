@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etherguard Prototype</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            dark: '#050505',
+                            panel: 'rgba(15, 23, 42, 0.7)',
+                            neonBlue: '#00f3ff',
+                            neonPink: '#ff003c',
+                            neonYellow: '#fcee0a',
+                            border: 'rgba(0, 243, 255, 0.3)',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Pretendard"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        mono: ['"Share Tech Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+
+<body class="bg-cyber-dark text-gray-200 h-screen w-screen overflow-hidden flex flex-col font-sans cyber-bg">
+    <!-- Navbar -->
+    <header
+        class="h-16 border-b border-cyber-border bg-cyber-panel backdrop-blur-md flex items-center justify-between px-6 z-10 shrink-0">
+        <div class="flex items-center gap-4">
+            <div class="text-cyber-neonBlue font-mono font-bold text-2xl tracking-widest glitch-text"
+                data-text="ETHERGUARD">ETHERGUARD</div>
+            <div
+                class="px-2 py-1 bg-cyber-neonPink/20 text-cyber-neonPink text-xs font-mono rounded border border-cyber-neonPink/50">
+                PROTOTYPE BUILD</div>
+        </div>
+        <div class="flex items-center gap-4 text-sm font-mono text-gray-400">
+            <span id="coord-display">SYS.COORD: 34.A9.00</span>
+            <span class="w-2 h-2 rounded-full bg-cyber-neonBlue animate-pulse"></span>
+        </div>
+    </header>
+    
+    <!-- Sector Selection Overlay -->
+    <div id="sector-selection-overlay" class="fixed inset-0 z-50 bg-cyber-dark/95 backdrop-blur-xl flex flex-col p-10 overflow-y-auto custom-scrollbar">
+        <div class="max-w-6xl mx-auto w-full">
+            <h1 class="text-4xl font-bold text-white mb-2 tracking-tighter italic">SECTOR SELECTION</h1>
+            <p class="text-cyber-neonBlue font-mono text-sm mb-10 tracking-widest">>> SELECT OPERATIONAL THEATER</p>
+            
+            <div id="sector-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <!-- Sector cards will be injected here -->
+            </div>
+        </div>
+
+        <!-- Global Sector Tooltip -->
+        <div id="sector-tooltip" class="fixed z-[60] pointer-events-none opacity-0 transition-opacity duration-300 w-96">
+            <div class="cyber-panel p-5 border border-cyber-neonBlue/50 bg-cyber-dark/98 backdrop-blur-3xl shadow-[0_0_30px_rgba(0,243,255,0.3)]">
+                <div id="tooltip-boss-area" class="flex gap-4 mb-4 pb-4 border-b border-white/10">
+                    <div id="tooltip-boss-image" class="w-20 h-20 bg-gray-900 rounded border border-cyber-neonPink/40 flex items-center justify-center shrink-0 relative overflow-hidden">
+                        <!-- Placeholder face logic will be in app.js -->
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <div class="text-[10px] font-mono text-cyber-neonPink uppercase tracking-tighter">Final Boss</div>
+                        <div id="tooltip-boss-name" class="text-sm font-bold text-white">BOSS NAME</div>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div>
+                        <div class="text-[10px] font-mono text-cyber-neonBlue uppercase">Sector Operations Overview</div>
+                        <div id="tooltip-summary" class="text-xs text-gray-300 leading-relaxed mt-1 italic border-l border-cyber-neonBlue/30 pl-2">Summary...</div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-[10px] font-mono text-gray-500 uppercase">System Narrative</div>
+                        <div id="tooltip-bg-setting" class="text-xs text-gray-300 leading-relaxed mt-1">Background setting...</div>
+                    </div>
+                    
+                    <div class="flex justify-between items-start gap-2 bg-black/30 p-2 rounded">
+                        <div>
+                            <div class="text-[10px] font-mono text-cyber-neonYellow uppercase">Unlock Condition</div>
+                            <div id="tooltip-unlock" class="text-[10px] text-gray-400 mt-0.5">Condition...</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] font-mono text-gray-500 uppercase">Sector BGM</div>
+                            <div id="tooltip-bgm" class="text-[10px] text-gray-400 mt-0.5">BGM_ID</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] font-mono text-gray-600 uppercase">Stages</span>
+                            <span id="tooltip-stats-total" class="text-xs font-bold text-cyber-neonBlue">TOTAL: 13</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1 items-center justify-end">
+                            <span title="Main" class="px-1 bg-cyber-neonBlue/10 text-cyber-neonBlue text-[9px] rounded font-mono" id="tooltip-stats-main">M:3</span>
+                            <span title="Sub" class="px-1 bg-gray-500/10 text-gray-400 text-[9px] rounded font-mono" id="tooltip-stats-sub">S:7</span>
+                            <span title="Event" class="px-1 bg-cyber-neonYellow/10 text-cyber-neonYellow text-[9px] rounded font-mono" id="tooltip-stats-event">E:1</span>
+                            <span title="Secret" class="px-1 bg-cyber-neonPink/10 text-cyber-neonPink text-[9px] rounded font-mono" id="tooltip-stats-secret">X:2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stage Selection Overlay -->
+    <div id="stage-selection-overlay" class="fixed inset-0 z-50 bg-cyber-dark/95 backdrop-blur-xl flex flex-col p-10 overflow-y-auto custom-scrollbar hidden">
+        <div class="max-w-6xl mx-auto w-full">
+            <div class="flex justify-between items-end mb-10">
+                <div>
+                    <button id="btn-back-to-sectors" class="text-cyber-neonBlue font-mono text-xs mb-4 hover:underline flex items-center gap-2">
+                        &lt; BACK TO SECTORS
+                    </button>
+                    <h1 class="text-4xl font-bold text-white mb-2 tracking-tighter italic" id="selected-sector-title">SECTOR NAME</h1>
+                    <p class="text-cyber-neonPink font-mono text-sm tracking-widest" id="selected-sector-desc">>> SECTOR OPERATIONAL STATUS: NOMINAL</p>
+                </div>
+            </div>
+            
+            <div id="stage-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Stage cards will be injected here -->
+            </div>
+        </div>
+
+        <!-- Global Stage Tooltip -->
+        <div id="stage-tooltip" class="fixed z-[60] pointer-events-none opacity-0 transition-opacity duration-300 w-[28rem]">
+            <div class="cyber-panel p-5 border border-cyber-neonPink/50 bg-cyber-dark/98 backdrop-blur-3xl shadow-[0_0_30px_rgba(255,0,60,0.2)]">
+                <div class="flex gap-4 mb-4 pb-4 border-b border-white/10">
+                    <div id="stage-tooltip-target-image" class="w-24 h-24 bg-gray-900 rounded border border-cyber-neonBlue/40 flex items-center justify-center shrink-0 relative overflow-hidden">
+                        <!-- Placeholder face logic will be in app.js -->
+                    </div>
+                    <div class="flex flex-col justify-center gap-1">
+                        <div id="stage-tooltip-type" class="px-2 py-0.5 bg-cyber-neonPink/20 text-cyber-neonPink text-[10px] font-mono border border-cyber-neonPink/40 rounded w-fit uppercase">Type</div>
+                        <div id="stage-tooltip-name" class="text-lg font-bold text-white">STAGE NAME</div>
+                        <div id="stage-tooltip-attribute" class="text-[10px] text-cyber-neonBlue font-mono uppercase">Attribute: Story</div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <div class="text-[10px] font-mono text-gray-500 uppercase">Mission Scenario</div>
+                        <div id="stage-tooltip-scenario" class="text-[11px] text-gray-300 leading-relaxed mt-1 italic border-l border-white/20 pl-3">Scenario content...</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 bg-black/40 p-3 rounded border border-white/5">
+                        <div class="space-y-2">
+                            <div>
+                                <div class="text-[9px] font-mono text-gray-500 uppercase">Clear Condition</div>
+                                <div id="stage-tooltip-condition" class="text-xs text-cyber-neonYellow mt-0.5">Condition...</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] font-mono text-gray-500 uppercase">Difficulty</div>
+                                <div id="stage-tooltip-difficulty" class="text-xs text-white mt-0.5 font-bold">★ ★ ★</div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-right">
+                            <div>
+                                <div class="text-[9px] font-mono text-gray-500 uppercase">Cost / 300</div>
+                                <div id="stage-tooltip-cost" class="text-xs text-cyber-neonBlue mt-0.5">Energy: 2</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] font-mono text-gray-500 uppercase">Unlock Status</div>
+                                <div id="stage-tooltip-unlock" class="text-[10px] text-gray-400 mt-0.5">LOCKED</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-[10px] font-mono text-gray-500 uppercase mb-2">Completion Rewards</div>
+                        <div id="stage-tooltip-rewards" class="flex flex-wrap gap-2 text-[10px]">
+                            <!-- Rewards will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="game-main" class="flex-1 flex overflow-hidden p-6 gap-6 relative z-10 hidden">
+
+        <!-- Left Panel: Quest & Scenario Info -->
+        <section class="w-1/3 flex flex-col gap-6">
+            <!-- Quest Card -->
+            <div class="cyber-panel rounded-lg p-6 flex flex-col gap-4 relative overflow-hidden flex-shrink-0">
+                <div
+                    class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyber-neonBlue to-transparent">
+                </div>
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-xs text-cyber-neonBlue font-mono mb-1 tracking-widest">CURRENT QUEST</h2>
+                        <div class="text-2xl font-bold text-white leading-tight" id="quest-title">Loading...</div>
+                    </div>
+                    <div class="text-right flex flex-col items-end gap-1">
+                        <div class="flex gap-2">
+                            <span id="quest-type-badge" class="px-2 py-0.5 bg-cyber-neonBlue/10 text-cyber-neonBlue text-[10px] font-mono border border-cyber-neonBlue/30 rounded uppercase">TYPE</span>
+                            <span id="quest-level-badge" class="px-2 py-0.5 bg-white/10 text-white text-[10px] font-mono border border-white/20 rounded uppercase">LV.0</span>
+                        </div>
+                        <div class="text-[9px] text-gray-500 font-mono mt-1 uppercase tracking-tighter">Quest Reference ID</div>
+                        <div class="text-lg font-mono text-cyber-neonYellow" id="quest-id">----</div>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-sm text-gray-300 leading-relaxed border-l-2 border-cyber-neonBlue pl-3 py-1"
+                    id="quest-desc">
+                    Initializing quest data...
+                </div>
+
+                <!-- Rewards & Conditions -->
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <div class="bg-black/40 rounded p-3 border border-white/5">
+                        <div class="text-xs text-gray-500 font-mono mb-2">CONDITIONS</div>
+                        <ul class="text-sm space-y-2 text-gray-300" id="quest-conditions">
+                            <li class="flex items-center gap-2">
+                                <div class="w-1.5 h-1.5 bg-gray-500 rounded-full"></div> Loading...
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-black/40 rounded p-3 border border-white/5">
+                        <div class="text-xs text-gray-500 font-mono mb-2">REWARDS</div>
+                        <ul class="text-sm space-y-2 text-gray-300 flex flex-wrap gap-2" id="quest-rewards">
+                            <div
+                                class="px-2 py-1 bg-cyber-neonYellow/10 text-cyber-neonYellow rounded text-xs border border-cyber-neonYellow/30">
+                                Loading...</div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="cyber-panel rounded-lg p-6 flex-1 flex flex-col relative overflow-hidden min-h-0">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xs text-cyber-neonPink font-mono tracking-widest flex items-center gap-2">
+                        <span class="w-2 h-2 bg-cyber-neonPink animate-pulse"></span>
+                        SCENARIO LOG
+                    </h2>
+                    <div class="bg-cyber-neonPink/10 border border-cyber-neonPink/30 px-3 py-1 text-xs text-cyber-neonPink font-bold rounded shadow-[0_0_8px_rgba(255,0,60,0.3)] hidden"
+                        id="emotion-tag-badge">
+                        <!-- Emotion Tag Title goes here -->
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar text-gray-300 text-sm leading-relaxed whitespace-pre-line"
+                    id="scenario-text">
+                    Awaiting data link...
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex gap-4 flex-shrink-0">
+                <button id="btn-prev"
+                    class="px-6 py-3 cyber-panel border border-cyber-border text-white hover:bg-white/5 transition-all w-1/3 text-sm font-mono flex items-center justify-center gap-2">
+                    &lt; PREV
+                </button>
+                <button id="btn-next"
+                    class="px-6 py-3 bg-cyber-neonBlue/20 border border-cyber-neonBlue text-cyber-neonBlue hover:bg-cyber-neonBlue hover:text-black transition-all font-bold tracking-widest flex-1 flex items-center justify-center gap-2 group">
+                    NEXT SEQUENCE
+                    <span class="group-hover:translate-x-1 transition-transform">-&gt;</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Panel: Chat Interface -->
+        <section class="w-2/3 cyber-panel rounded-lg flex flex-col overflow-hidden relative border border-cyber-border">
+
+            <!-- Chat Header -->
+            <div
+                class="h-14 border-b border-cyber-border/50 bg-black/40 flex items-center justify-between px-6 shrink-0 z-10">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-cyber-neonPink to-purple-600 flex items-center justify-center border border-white/20">
+                        <span class="text-xs font-bold text-white" id="npc-avatar">AI</span>
+                    </div>
+                    <div class="font-bold text-gray-100" id="npc-name">NPC System</div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button id="btn-show-menu" class="px-3 py-1 border border-white/20 rounded text-xs text-gray-400 hover:bg-white/10 hover:text-white transition-all font-mono">
+                        MENU
+                    </button>
+                </div>
+                <!-- Status metrics -->
+                <div class="flex gap-6 text-sm font-mono items-center">
+                    <div class="flex flex-col items-end mr-4">
+                        <span class="text-cyber-neonPink font-bold text-xs tracking-widest mb-1 animate-pulse"
+                            style="text-shadow: 0 0 5px rgba(255,0,60,0.8);">SYSTEM STRESS: <span id="stress-value">0%</span></span>
+                        <div
+                            class="w-64 h-4 bg-gray-900 rounded-sm overflow-hidden border border-cyber-neonPink shadow-[0_0_15px_rgba(255,0,60,0.4)] relative">
+                            <div id="main-stress-bar"
+                                class="h-full bg-cyber-neonPink w-[0%] transition-all duration-500 shadow-[0_0_10px_rgba(255,0,60,1)]">
+                            </div>
+                            <!-- striped overlay for aesthetic -->
+                            <div class="absolute inset-0 opacity-20"
+                                style="background: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.5) 5px, rgba(0,0,0,0.5) 10px);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages Area -->
+            <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 custom-scrollbar relative" id="chat-container">
+                <!-- Messages will be injected here by app.js -->
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="p-4 bg-black/60 border-t border-cyber-border/50 shrink-0 z-10 flex gap-3 backdrop-blur-md">
+                <!-- Test Result Buttons -->
+                <div class="flex gap-2 mr-2">
+                    <button id="btn-test-success" class="px-3 py-1 bg-green-500/10 hover:bg-green-500/30 text-green-400 border border-green-500/30 rounded text-[10px] font-bold transition-all uppercase tracking-tighter shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+                        Test Success
+                    </button>
+                    <button id="btn-test-failure" class="px-3 py-1 bg-red-500/10 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded text-[10px] font-bold transition-all uppercase tracking-tighter shadow-[0_0_10px_rgba(239,68,68,0.1)]">
+                        Test failure
+                    </button>
+                </div>
+                <input type="text" id="chat-input" placeholder="Initiate communication (Dummy input)..."
+                    class="flex-1 bg-white/5 border border-white/10 rounded px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-cyber-neonBlue focus:ring-1 focus:ring-cyber-neonBlue transition-all text-sm">
+                <button id="btn-send"
+                    class="w-14 items-center justify-center flex bg-white/10 hover:bg-cyber-neonBlue hover:text-black transition-all rounded text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Result Modals Overlay -->
+    <div id="result-modal-overlay" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center hidden opacity-0 transition-opacity duration-500">
+        
+        <!-- Success Modal -->
+        <div id="quest-success-modal" class="max-w-2xl w-full mx-4 cyber-panel border-2 border-green-500/50 shadow-[0_0_50px_rgba(34,197,94,0.3)] p-8 flex flex-col items-center hidden transform scale-95 transition-transform duration-500 overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <!-- 1. 클리어 여부 표시 -->
+            <div class="w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-400 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(34,197,94,0.5)]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <h2 class="text-4xl font-black text-white italic tracking-tighter mb-1">QUEST CLEARED</h2>
+            <p class="text-green-400 font-mono text-xs tracking-[0.3em] mb-6 uppercase">>> Synchronization Complete</p>
+            
+            <!-- 2. 캐릭터 이미지 + 클리어 대사 -->
+            <div class="w-full flex gap-6 bg-black/40 p-5 rounded border border-white/10 mb-6">
+                <div id="success-character-image" class="w-24 h-24 bg-gray-900 rounded border border-green-500/30 shrink-0 relative overflow-hidden flex items-center justify-center">
+                    <span class="text-xs text-gray-600 font-mono">IMAGE</span>
+                </div>
+                <div class="flex flex-col justify-center text-left">
+                    <div id="success-character-name" class="text-xs font-mono text-green-400 mb-1">CHARACTER NAME</div>
+                    <div id="success-character-dialogue" class="text-sm text-gray-200 italic leading-relaxed">"클리어 시 캐릭터 대사가 여기에 유동적으로 표시됩니다."</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 w-full mb-6">
+                <!-- 3. 결과 정보 (상세 조건 + 소모 턴수) -->
+                <div class="flex flex-col gap-3 text-left">
+                    <div class="text-[10px] font-mono text-gray-500 uppercase border-b border-white/10 pb-1">Operational Data</div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center bg-white/5 p-2 rounded">
+                            <span class="text-[10px] text-gray-400">Total Turns</span>
+                            <span id="success-total-turns" class="text-sm font-bold text-cyber-neonBlue font-mono">12 Turns</span>
+                        </div>
+                        <div id="success-conditions-results" class="space-y-1">
+                            <!-- Condition results injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 스테이지 보상 목록 -->
+                <div class="flex flex-col gap-3 text-left">
+                    <div class="text-[10px] font-mono text-gray-500 uppercase border-b border-white/10 pb-1">Rewards Recovered</div>
+                    <div id="success-rewards-list" class="grid grid-cols-1 gap-2">
+                        <!-- Rewards will be injected -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. 해금 알림 -->
+            <div id="success-unlock-notice" class="w-full bg-cyber-neonBlue/10 border border-cyber-neonBlue/30 p-3 rounded flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 bg-cyber-neonBlue/20 rounded flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-cyber-neonBlue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <div class="text-left">
+                    <div class="text-[10px] font-mono text-cyber-neonBlue uppercase tracking-widest">New Sector/Stage Unlocked</div>
+                    <div id="unlocked-stage-name" class="text-xs text-white font-bold italic">SECTOR 102: 올드윅 하이츠 ACCESS GRANTED</div>
+                </div>
+            </div>
+            
+            <!-- 7 & 8. 바로 가기 / 로비 가기 -->
+            <div class="flex gap-4 w-full">
+                <button id="btn-success-continue" class="flex-1 py-4 bg-green-500 text-black font-black tracking-widest hover:bg-green-400 transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] uppercase text-sm">
+                    Next Sequence
+                </button>
+                <button id="btn-success-lobby" class="px-8 py-4 bg-gray-800 text-gray-400 font-bold tracking-widest hover:bg-gray-700 transition-all uppercase text-sm">
+                    Lobby
+                </button>
+            </div>
+        </div>
+
+        <!-- Failure Modal -->
+        <div id="quest-failure-modal" class="max-w-2xl w-full mx-4 cyber-panel border-2 border-red-500/50 shadow-[0_0_50px_rgba(239,68,68,0.3)] p-8 flex flex-col items-center hidden transform scale-95 transition-transform duration-500 overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <!-- 1. 퀘스트 정보 -->
+            <div class="w-full flex justify-between items-start mb-6 border-b border-red-500/20 pb-4">
+                <div class="text-left">
+                    <div id="failure-location-info" class="text-[10px] font-mono text-red-500/70 uppercase">SECTOR 101 / STAGE 01</div>
+                    <div id="failure-quest-name" class="text-xl font-bold text-white tracking-tight">QUEST NAME</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-[10px] font-mono text-gray-500 uppercase">Status</div>
+                    <div class="text-red-500 font-bold font-mono">CONNECTION LOST</div>
+                </div>
+            </div>
+
+            <!-- 2. 간단 결과창 -->
+            <div class="flex flex-col items-center mb-8">
+                <div class="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-400 flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(239,68,68,0.5)] animate-pulse">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+                <h2 class="text-4xl font-black text-white italic tracking-tighter mb-1 glitch-text" data-text="MISSION FAILED">MISSION FAILED</h2>
+                <p class="text-red-500 font-mono text-xs tracking-[0.3em] uppercase">>> Neural Link Severed</p>
+            </div>
+            
+            <!-- 3 & 4. 상세보기 탭 및 정보 -->
+            <div class="w-full mb-8">
+                <button id="btn-toggle-failure-details" class="w-full flex items-center justify-between px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono mb-2 hover:bg-red-500/20 transition-all">
+                    <span>VIEW DETAILED ANALYSIS</span>
+                    <span id="details-toggle-icon">+</span>
+                </button>
+                <div id="failure-details-panel" class="hidden space-y-3 bg-black/60 p-4 rounded border border-white/5 text-left transition-all duration-300">
+                    <div>
+                        <div class="text-[9px] font-mono text-gray-500 uppercase">Termination Reason</div>
+                        <div id="failure-reason-detail" class="text-sm text-gray-200 mt-1 italic">System stress limit exceeded. Neural link stability lost.</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/5">
+                        <div id="failure-objectives-status">
+                            <div class="text-[9px] font-mono text-gray-500 uppercase">Objectives Status</div>
+                            <!-- Status list injected -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5 & 6. 기본 스탯 / 턴수 게이지 -->
+            <div class="w-full grid grid-cols-2 gap-6 mb-8">
+                <div class="space-y-2 text-left">
+                    <div class="flex justify-between text-[10px] font-mono text-gray-500 uppercase">
+                        <span>Terminal Stress</span>
+                        <span id="failure-stress-value" class="text-red-500">100%</span>
+                    </div>
+                    <div class="h-2 bg-gray-900 rounded-full overflow-hidden border border-white/10">
+                        <div id="failure-stress-gauge" class="h-full bg-red-500 w-full shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                    </div>
+                </div>
+                <div class="space-y-2 text-left">
+                    <div class="flex justify-between text-[10px] font-mono text-gray-500 uppercase">
+                        <span>Elapsed Turns</span>
+                        <span id="failure-turns-value" class="text-cyber-neonBlue font-mono">15/15</span>
+                    </div>
+                    <div class="h-2 bg-gray-900 rounded-full overflow-hidden border border-white/10">
+                        <div id="failure-turns-gauge" class="h-full bg-cyber-neonBlue w-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. 팁 (힌트) -->
+            <div class="w-full bg-cyber-neonYellow/5 border-l-4 border-cyber-neonYellow p-4 text-left mb-8">
+                <div class="text-[10px] font-mono text-cyber-neonYellow uppercase mb-1 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    Strategic Advisory
+                </div>
+                <div id="failure-tip" class="text-sm text-gray-300 italic">"재도전 시 캐릭터의 특정 감정 선을 자극해 보세요. emotion_tb를 활용하는 것이 클리어의 핵심입니다."</div>
+            </div>
+            
+            <!-- 8 & 9. 재도전 / 로비 가기 -->
+            <div class="flex gap-4 w-full">
+                <button id="btn-failure-retry" class="flex-1 py-4 bg-red-600 text-white font-black tracking-widest hover:bg-red-500 transition-all uppercase text-sm shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+                    Re-link Neural Core
+                </button>
+                <button id="btn-failure-exit" class="px-8 py-4 bg-gray-800 text-gray-400 font-bold tracking-widest hover:bg-gray-700 transition-all uppercase text-sm">
+                    Sector Map
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Logic -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
