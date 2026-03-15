@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emotionTagBadge = document.getElementById('emotion-tag-badge');
     const stressValueEl = document.getElementById('stress-value');
     const npcNameEl = document.getElementById('npc-name');
+    const npcRealNameEl = document.getElementById('npc-real-name');
     const npcAvatarEl = document.getElementById('npc-avatar');
 
     const btnNext = document.getElementById('btn-next');
@@ -372,6 +373,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Character Name Logic
         const charId = q['기본스텟'] || q['\uFEFF기본스텟'] || q['기본스텟 '] || q['기본감정'];
         currentCharacter = characters.find(c => String(c['index']).trim() === String(charId).trim());
+        
+        // Fallback: If ID matching fails, try name matching from '대표캐릭터' field
+        if (!currentCharacter) {
+            let charNameRaw = q['대표캐릭터'] || '';
+            // 1. Try extracting from [Name] or (Name)
+            let match = charNameRaw.match(/\[(.*?)\]/) || charNameRaw.match(/\((.*?)\)/);
+            let extractedName = match ? match[1].trim() : '';
+            
+            // 2. If no brackets, try taking the last word or the whole string
+            if (!extractedName) {
+                // If it's something like "교단 선동가 장보", take the last word
+                let parts = charNameRaw.trim().split(/\s+/);
+                extractedName = parts[parts.length - 1].replace(/[\[\]\(\)]/g, '').trim();
+            }
+            
+            if (extractedName) {
+                currentCharacter = characters.find(c => 
+                    String(c['캐릭터명']).trim() === String(extractedName).trim()
+                );
+            }
+        }
+        
         const charName = currentCharacter ? currentCharacter['캐릭터명'] : "Unknown NPC";
 
         // Update UI
@@ -388,7 +411,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (questLevelBadge) questLevelBadge.textContent = `LV.${qLevel}`;
 
         // Update NPC Header
-        npcNameEl.textContent = charName; 
+        const rawCharName = q['대표캐릭터'] || q['\uFEFF대표캐릭터'] || q[' 대표캐릭터'] || q['대표캐릭터 '] || "Unknown NPC";
+        npcNameEl.textContent = rawCharName; 
+        if (npcRealNameEl) {
+            npcRealNameEl.textContent = `IDENTITY: ${charName.toUpperCase()}`;
+            npcRealNameEl.style.display = 'block';
+        }
         npcAvatarEl.textContent = charName.substring(0, 1).toUpperCase();
 
         // Populate Emotion Tag Badge
@@ -424,14 +452,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (r2Type) addRewardBadge(`${r2Type} x${r2Val}`);
         if (!r1Type && !r2Type) addRewardBadge("None");
 
-        // Clear Chat and add system + first dialogue
+        // Clear Chat and add system + scenario + first dialogue
         chatContainer.innerHTML = '';
         addChatMessage("System", `Initiating protocol sequence [${id}]: ${title}`, 'system');
+
+        if (scenario) {
+            addChatMessage("Scenario", scenario, 'scenario');
+        }
 
         if (firstLine) {
             setTimeout(() => {
                 addChatMessage(charName, firstLine.replace(/^"|"$|""/g, '').trim(), 'npc');
-            }, 500);
+            }, 1000);
         }
 
         // Update Nav buttons
@@ -470,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCondition(c) {
         const li = document.createElement('li');
-        li.className = "flex flex-col gap-1 mb-2 last:mb-0";
+        li.className = "flex items-center gap-2";
 
         let isGauge = false;
         let target = 0;
@@ -491,22 +523,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const percent = Math.min((c.current / target) * 100, 100) + '%';
             const isComplete = c.current >= target;
             li.innerHTML = `
-                <div class="flex justify-between items-end">
-                    <span class="text-xs ${isComplete ? 'text-green-400' : 'text-cyber-neonBlue'} font-bold">${label}</span>
-                    <span class="text-[10px] text-gray-400 font-mono">${c.current} / ${target}</span>
-                </div>
-                <div class="w-full h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
-                    <div class="h-full ${isComplete ? 'bg-green-400' : 'bg-cyber-neonBlue'} transition-all duration-300" style="width: ${percent};"></div>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] ${isComplete ? 'text-green-400' : 'text-cyber-neonBlue'} font-bold whitespace-nowrap">${label}</span>
+                    <div class="w-16 h-1 bg-gray-800 rounded-full overflow-hidden border border-white/5 relative">
+                        <div class="h-full ${isComplete ? 'bg-green-400' : 'bg-cyber-neonBlue'} transition-all duration-300" style="width: ${percent};"></div>
+                    </div>
+                    <span class="text-[9px] text-gray-500 font-mono">${c.current}/${target}</span>
                 </div>
             `;
         } else {
             li.innerHTML = `
-                <div class="flex items-start gap-2">
-                    <div class="w-1.5 h-1.5 mt-1 bg-cyber-neonPink rounded-full shadow-[0_0_5px_rgba(255,0,60,0.8)]"></div>
-                    <div>
-                        <div class="text-xs text-cyber-neonPink font-bold">${c.type}</div>
-                        <div class="text-[10px] text-gray-400 break-words">${c.val}</div>
-                    </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-1 h-1 bg-cyber-neonPink rounded-full animate-pulse shadow-[0_0_5px_rgba(255,0,60,0.8)]"></div>
+                    <div class="text-[10px] text-cyber-neonPink font-bold">${c.type}</div>
+                    <div class="text-[9px] text-gray-400">${c.val}</div>
                 </div>
             `;
         }
@@ -514,10 +544,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addRewardBadge(text) {
-        const div = document.createElement('div');
-        div.className = "px-2 py-1 bg-cyber-neonYellow/10 text-cyber-neonYellow rounded text-xs border border-cyber-neonYellow/30 shadow-[0_0_5px_rgba(252,238,10,0.2)]";
-        div.textContent = text;
-        questRew.appendChild(div);
+        const li = document.createElement('li');
+        li.className = "px-1.5 py-0.5 bg-cyber-neonYellow/5 text-cyber-neonYellow rounded text-[9px] border border-cyber-neonYellow/20 font-mono";
+        li.textContent = text;
+        questRew.appendChild(li);
     }
 
     function addChatMessage(sender, text, type) {
@@ -529,7 +559,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let senderName = sender;
 
         if (type === 'system') {
-            bubbleClasses = 'bg-white/5 border border-white/10 text-gray-400 text-[10px] font-mono w-full text-center py-2 rounded uppercase tracking-widest';
+            bubbleClasses = 'bg-white/5 border border-white/10 text-gray-400 text-[10px] font-mono w-full text-center py-2 rounded uppercase tracking-widest mb-2';
+            wrap.innerHTML = `<div class="${bubbleClasses}">${text}</div>`;
+            chatContainer.appendChild(wrap);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return;
+        } else if (type === 'scenario') {
+            bubbleClasses = 'bg-black/20 border-l-2 border-cyber-neonBlue/50 text-gray-400 text-xs italic px-4 py-2 w-full mb-3';
             wrap.innerHTML = `<div class="${bubbleClasses}">${text}</div>`;
             chatContainer.appendChild(wrap);
             chatContainer.scrollTop = chatContainer.scrollHeight;

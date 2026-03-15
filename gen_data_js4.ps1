@@ -78,8 +78,7 @@ const characterCsvData = ${BT}${ch}${BT};
 
 # 결과 파일 저장 (prototype 폴더)
 $outPath = ".\prototype\data.js"
-$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
-[System.IO.File]::WriteAllLines($outPath, $content.Split("`n"), $Utf8NoBomEncoding)
+$content | Set-Content -Path $outPath -Encoding UTF8
 
 $sz = (Get-Item $outPath).Length
 Write-Host "완료! .\prototype\data.js ($sz bytes)"
