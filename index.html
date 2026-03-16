@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etherguard 2 Launcher</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>게임 실행 런처</h2>
+        <p>팝업 차단을 해제해야 모바일 창(9:16 비율)이 자동으로 열립니다.</p>
+        <p id="status">창 여는 중...</p>
+        <button onclick="openMobileWindow()">수동으로 게임 열기</button>
+    </div>
+
+    <script>
+        function openMobileWindow() {
+            // 9:16 모바일 비율 (예: 450x800)
+            const width = 450;
+            const height = 800;
+            
+            // 화면 중앙에 오도록 계산
+            const left = (window.screen.width / 2) - (width / 2);
+            const top = (window.screen.height / 2) - (height / 2);
+            
+            // 새 창 열기 (주소 표시줄 등 최소화)
+            const features = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no`;
+            const popup = window.open('prototype/index.html', 'Etherguard2_Mobile', features);
+            
+            const statusEl = document.getElementById('status');
+            if (popup) {
+                statusEl.innerText = "모바일 창이 열렸습니다!";
+                statusEl.style.color = "green";
+            } else {
+                statusEl.innerText = "팝업이 차단되었습니다. 위 버튼을 눌러 수동으로 열어주세요.";
+                statusEl.style.color = "red";
+            }
+        }
+
+        // 페이지 로드 시 자동 실행
+        window.onload = openMobileWindow;
+    </script>
+</body>
+</html>

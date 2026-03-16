@@ -125,8 +125,9 @@
         <div class="max-w-6xl mx-auto w-full">
             <div class="flex justify-between items-end mb-10">
                 <div>
-                    <button id="btn-back-to-sectors" class="text-cyber-neonBlue font-mono text-xs mb-4 hover:underline flex items-center gap-2">
-                        &lt; BACK TO SECTORS
+                    <button id="btn-back-to-sectors" class="text-cyber-neonBlue font-mono text-base mb-6 py-2 px-4 bg-cyber-neonBlue/10 hover:bg-cyber-neonBlue/30 border border-cyber-neonBlue/30 hover:border-cyber-neonBlue transition-all rounded w-fit flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        BACK TO SECTORS
                     </button>
                     <h1 class="text-4xl font-bold text-white mb-2 tracking-tighter italic" id="selected-sector-title">SECTOR NAME</h1>
                     <p class="text-cyber-neonPink font-mono text-sm tracking-widest" id="selected-sector-desc">>> SECTOR OPERATIONAL STATUS: NOMINAL</p>
@@ -199,41 +200,45 @@
         <section class="flex-1 cyber-panel rounded-lg flex flex-col overflow-hidden relative border border-cyber-border min-w-0">
             
             <!-- Quest Briefing Top Header (Integrated) -->
-            <div class="bg-black/60 border-b border-cyber-border/30 p-4 shrink-0 flex flex-col gap-3 relative overflow-hidden">
+            <div class="bg-black/60 border-b border-cyber-border/30 p-5 shrink-0 flex flex-col gap-4 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-cyber-neonBlue to-transparent opacity-50"></div>
                 
-                <div class="flex justify-between items-center gap-6">
-                    <div class="flex flex-col gap-1 min-w-0 flex-1">
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center gap-2">
-                                <h2 class="text-[9px] text-cyber-neonBlue font-mono tracking-[0.2em] uppercase opacity-70">MISSION BRIEFING</h2>
-                                <span id="quest-id" class="text-[10px] font-mono text-cyber-neonYellow border border-cyber-neonYellow/30 px-1.5 rounded">----</span>
-                            </div>
-                            <button id="btn-show-menu" class="px-2 py-0.5 border border-cyber-neonBlue/30 bg-cyber-neonBlue/10 rounded text-[9px] text-cyber-neonBlue hover:bg-cyber-neonBlue hover:text-black transition-all font-mono font-bold tracking-widest">
-                                STAGE
-                            </button>
+                <!-- STAGE Button (Absolute Top Right) -->
+                <button id="btn-show-menu" class="absolute top-4 right-4 z-20 px-3 py-1.5 border border-cyber-neonBlue/40 bg-cyber-neonBlue/10 rounded-sm text-[11px] text-cyber-neonBlue hover:bg-cyber-neonBlue hover:text-black transition-all font-mono font-bold tracking-widest flex items-center gap-1 bg-black/80 backdrop-blur-md shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    STAGE
+                </button>
+
+                <!-- Top Layout section (Flex with wrap for mobile sizes) -->
+                <div class="flex flex-col gap-4 pr-16 w-full"> 
+                    
+                    <div class="flex flex-col gap-1.5 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-[9px] text-cyber-neonBlue font-mono tracking-[0.2em] uppercase opacity-70">MISSION BRIEFING</h2>
+                            <span id="quest-id" class="text-[10px] font-mono text-cyber-neonYellow border border-cyber-neonYellow/30 px-1.5 rounded">----</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <div class="text-xl font-black text-white italic tracking-tighter" id="quest-title">Loading...</div>
-                            <div class="flex gap-1.5 shrink-0">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-1">
+                            <div class="text-2xl font-black text-white italic tracking-tighter" id="quest-title">Loading...</div>
+                            <div class="flex gap-1.5 shrink-0 mt-1 sm:mt-0">
                                 <span id="quest-type-badge" class="px-1.5 py-0.5 bg-cyber-neonBlue/10 text-cyber-neonBlue text-[8px] font-mono border border-cyber-neonBlue/20 rounded uppercase">TYPE</span>
                                 <span id="quest-level-badge" class="px-1.5 py-0.5 bg-white/5 text-white text-[8px] font-mono border border-white/10 rounded uppercase">LV.0</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Conditions & Rewards (Horizontal) -->
-                    <div class="flex items-center gap-4 shrink-0">
+                    <!-- Conditions & Rewards (Vertical on mobile, Horizontal on larger screens) -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 shrink-0 bg-white/5 rounded-md p-2">
                         <div class="flex flex-col gap-1">
-                            <div class="text-[8px] font-mono text-gray-500 uppercase tracking-widest text-right">CONDITIONS</div>
-                            <ul class="text-[11px] text-cyber-neonBlue font-bold flex gap-3 whitespace-nowrap" id="quest-conditions">
+                            <div class="text-[8px] font-mono text-gray-500 uppercase tracking-widest text-left">CONDITIONS</div>
+                            <ul class="text-[11px] text-cyber-neonBlue font-bold flex flex-wrap gap-2 sm:gap-3" id="quest-conditions">
                                 <li>Loading...</li>
                             </ul>
                         </div>
-                        <div class="w-px h-8 bg-white/10"></div>
+                        <div class="hidden sm:block w-px h-8 bg-white/10"></div>
+                        <div class="w-full h-px bg-white/10 sm:hidden"></div>
                         <div class="flex flex-col gap-1">
-                            <div class="text-[8px] font-mono text-gray-500 uppercase tracking-widest">REWARDS RECOVERED</div>
-                            <ul class="flex gap-2" id="quest-rewards">
+                            <div class="text-[8px] font-mono text-gray-500 uppercase tracking-widest text-left">REWARDS RECOVERED</div>
+                            <ul class="flex flex-wrap gap-2" id="quest-rewards">
                                 <li class="text-[10px] text-cyber-neonYellow font-mono bg-cyber-neonYellow/5 px-1.5 border border-cyber-neonYellow/20 rounded">Loading...</li>
                             </ul>
                         </div>
@@ -249,11 +254,13 @@
                         TAG
                     </div>
                     <div class="flex gap-2">
-                         <button id="btn-prev" class="px-3 py-1 bg-white/5 border border-white/10 rounded text-[9px] text-gray-400 font-mono hover:bg-white/10 transition-all uppercase tracking-widest">
+                         <button id="btn-prev" class="px-4 py-2 bg-white/5 border border-white/10 rounded text-[10px] text-gray-300 font-mono hover:bg-white/10 transition-all uppercase tracking-widest flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                             PREV
                         </button>
-                        <button id="btn-next" class="px-4 py-1 bg-cyber-neonBlue/20 border border-cyber-neonBlue text-cyber-neonBlue rounded text-[9px] font-bold hover:bg-cyber-neonBlue hover:text-black transition-all uppercase tracking-widest">
+                        <button id="btn-next" class="px-5 py-2 bg-cyber-neonBlue/20 border border-cyber-neonBlue text-cyber-neonBlue rounded text-[10px] font-bold hover:bg-cyber-neonBlue hover:text-black transition-all uppercase tracking-widest flex items-center gap-1">
                             Next Seq.
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                         </button>
                     </div>
                 </div>

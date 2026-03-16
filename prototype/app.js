@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let characters = [];
     let emotions = [];
+    let worlds = [];
     
     let currentIndex = 0;
     let currentConditions = [];
@@ -94,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'stat', data: typeof statCsvData !== 'undefined' ? statCsvData : null, setter: d => stats = d },
             { id: 'sector', data: typeof sectorCsvData !== 'undefined' ? sectorCsvData : null, setter: d => sectors = d },
             { id: 'stage', data: typeof stageCsvData !== 'undefined' ? stageCsvData : null, setter: d => stages = d },
+            { id: 'world', data: typeof worldCsvData !== 'undefined' ? worldCsvData : null, setter: d => worlds = d },
             { id: 'character', data: typeof characterCsvData !== 'undefined' ? characterCsvData : null, setter: d => characters = d },
             { id: 'emotion', data: typeof emotionCsvData !== 'undefined' ? emotionCsvData : null, setter: d => emotions = d }
         ];
@@ -145,6 +147,24 @@ document.addEventListener('DOMContentLoaded', () => {
         sectorOverlay.classList.remove('hidden');
         stageOverlay.classList.add('hidden');
         gameMain.classList.add('hidden');
+
+        // Render World info on top if available
+        let worldTitleEl = document.getElementById('world-title-display');
+        if (!worldTitleEl) {
+            const headerContainer = sectorOverlay.querySelector('.max-w-6xl');
+            worldTitleEl = document.createElement('h2');
+            worldTitleEl.id = 'world-title-display';
+            worldTitleEl.className = 'text-cyber-neonBlue font-mono text-lg mb-1 tracking-widest uppercase';
+            headerContainer.insertBefore(worldTitleEl, headerContainer.firstChild);
+        }
+        
+        let currentWorldName = "SYSTEM_WORLD";
+        if (sectors.length > 0 && worlds && worlds.length > 0) {
+            const wId = sectors[0]['월드']; // Assuming all listed sectors belong to the same world for prototype
+            const wData = worlds.find(w => String(w['world_id']).trim() === String(wId).trim());
+            if (wData) currentWorldName = wData['월드명'];
+        }
+        worldTitleEl.textContent = `WORLD: ${currentWorldName}`;
 
         sectorList.innerHTML = '';
         sectors.filter(s => s.sector_id).forEach(sector => {
@@ -293,8 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const diffLevel = parseInt(stage['난이도']) || 1;
         stageTooltipDifficulty.textContent = '★ '.repeat(diffLevel) + '☆ '.repeat(Math.max(0, 5 - diffLevel));
         
-        stageTooltipCost.textContent = `Energy: ${stage['채팅 에너지 소모량'] || '0'}`;
-        stageTooltipUnlock.textContent = stage['해금 조건'] || 'UNLOCKED';
+        stageTooltipCost.textContent = `Energy: ${stage['채팅 에너지 소모량'] || '0'} / 티켓: ${stage['소모 티켓'] || '0'}`;
+        stageTooltipUnlock.textContent = stage['선행 스테이지'] || 'UNLOCKED';
         
         // Rewards
         stageTooltipRewards.innerHTML = '';
@@ -414,7 +434,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawCharName = q['대표캐릭터'] || q['\uFEFF대표캐릭터'] || q[' 대표캐릭터'] || q['대표캐릭터 '] || "Unknown NPC";
         npcNameEl.textContent = rawCharName; 
         if (npcRealNameEl) {
-            npcRealNameEl.textContent = `IDENTITY: ${charName.toUpperCase()}`;
+            const charJob = currentCharacter ? (currentCharacter['직업명'] || '') : '';
+            const identityText = charJob ? `IDENTITY: ${charJob} ${charName.toUpperCase()}` : `IDENTITY: ${charName.toUpperCase()}`;
+            npcRealNameEl.textContent = identityText;
             npcRealNameEl.style.display = 'block';
         }
         npcAvatarEl.textContent = charName.substring(0, 1).toUpperCase();
@@ -781,7 +803,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const failTurnsVal = document.getElementById('failure-turns-value');
             const failTurnsGauge = document.getElementById('failure-turns-gauge');
-            const maxTurns = 20; // 가상 최대 턴
+            
+            // CSV '제한 기본 턴수' 동적 로드 (값 없을 시 기본 20)
+            let maxTurns = 20;
+            if (q['스테이지']) {
+                const stageData = stages.find(s => String(s['퀘스트 번호']).trim() === String(q['quest_id']).trim());
+                if (stageData && stageData['제한 기본 턴수']) {
+                    maxTurns = parseInt(stageData['제한 기본 턴수'], 10) || 20;
+                }
+            }
+            
             if (failTurnsVal) failTurnsVal.textContent = `${globalTurnCount}/${maxTurns}`;
             if (failTurnsGauge) failTurnsGauge.style.width = `${Math.min((globalTurnCount / maxTurns) * 100, 100)}%`;
 
