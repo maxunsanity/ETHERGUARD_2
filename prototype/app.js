@@ -198,26 +198,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // Tooltip interactions
-            card.onmouseenter = (e) => {
-                updateSectorTooltip(sector);
-                const rect = card.getBoundingClientRect();
-                sectorTooltip.style.top = `${rect.top}px`;
-                sectorTooltip.style.left = `${rect.right + 20}px`;
-                sectorTooltip.classList.remove('opacity-0');
-            };
-
-            card.onmouseleave = () => {
-                sectorTooltip.classList.add('opacity-0');
-            };
-
+            // Modal interactions (Replaced Hover Tooltip)
             card.onclick = () => {
-                sectorTooltip.classList.add('opacity-0');
-                showStageSelection(sector);
+                updateSectorTooltip(sector);
+                sectorTooltip.classList.remove('hidden');
+                // Small delay to allow display:block to apply before animating opacity
+                setTimeout(() => sectorTooltip.classList.remove('opacity-0'), 10);
+                
+                
+                // Bind Modal Buttons (use addEventListener with once or remove before add to avoid duplicates)
+                const btnEnter = document.getElementById('btn-enter-sector');
+                const btnClose = document.getElementById('btn-close-sector-modal');
+                
+                // Remove existing listeners to prevent multiple fires
+                const newBtnClose = btnClose.cloneNode(true);
+                btnClose.parentNode.replaceChild(newBtnClose, btnClose);
+                
+                const newBtnEnter = btnEnter.cloneNode(true);
+                btnEnter.parentNode.replaceChild(newBtnEnter, btnEnter);
+                
+                newBtnClose.onclick = (e) => {
+                    e.stopPropagation();
+                    sectorTooltip.classList.add('opacity-0');
+                    setTimeout(() => sectorTooltip.classList.add('hidden'), 300);
+                };
+                
+                newBtnEnter.onclick = (e) => {
+                    e.stopPropagation();
+                    sectorTooltip.classList.add('opacity-0');
+                    setTimeout(() => sectorTooltip.classList.add('hidden'), 300);
+                    showStageSelection(sector);
+                };
             };
             
             sectorList.appendChild(card);
         });
+        
+        // Hide modal when clicking outside the panel (on the background overlay)
+        if (sectorTooltip) {
+            sectorTooltip.onclick = (e) => {
+                if(e.target === sectorTooltip) {
+                    sectorTooltip.classList.add('opacity-0');
+                    setTimeout(() => sectorTooltip.classList.add('hidden'), 300);
+                }
+            };
+        }
     }
 
     function updateSectorTooltip(sector) {
@@ -271,33 +296,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // Tooltip interactions
-            card.onmouseenter = (e) => {
-                updateStageTooltip(stage);
-                const rect = card.getBoundingClientRect();
-                
-                // Position logic (try to show on left if no space on right)
-                let left = rect.right + 20;
-                if (left + 450 > window.innerWidth) {
-                    left = rect.left - 470;
-                }
-                
-                stageTooltip.style.top = `${Math.max(100, rect.top - 50)}px`;
-                stageTooltip.style.left = `${left}px`;
-                stageTooltip.classList.remove('opacity-0');
-            };
-
-            card.onmouseleave = () => {
-                stageTooltip.classList.add('opacity-0');
-            };
-
+            // Modal interactions (Replaced Hover Tooltip)
             card.onclick = () => {
-                stageTooltip.classList.add('opacity-0');
-                enterStage(stage);
+                updateStageTooltip(stage);
+                stageTooltip.classList.remove('hidden');
+                setTimeout(() => stageTooltip.classList.remove('opacity-0'), 10);
+                
+                // Bind Modal Buttons
+                const btnStart = document.getElementById('btn-start-quest');
+                const btnClose = document.getElementById('btn-close-stage-modal');
+                
+                // Prevent duplicate listeners
+                const newBtnClose = btnClose.cloneNode(true);
+                btnClose.parentNode.replaceChild(newBtnClose, btnClose);
+                
+                const newBtnStart = btnStart.cloneNode(true);
+                btnStart.parentNode.replaceChild(newBtnStart, btnStart);
+                
+                newBtnClose.onclick = (e) => {
+                    e.stopPropagation();
+                    stageTooltip.classList.add('opacity-0');
+                    setTimeout(() => stageTooltip.classList.add('hidden'), 300);
+                };
+                
+                newBtnStart.onclick = (e) => {
+                    e.stopPropagation();
+                    stageTooltip.classList.add('opacity-0');
+                    setTimeout(() => stageTooltip.classList.add('hidden'), 300);
+                    enterStage(stage);
+                };
             };
             
             stageList.appendChild(card);
         });
+        
+        // Hide modal when clicking outside the panel
+        if (stageTooltip) {
+            stageTooltip.onclick = (e) => {
+                if(e.target === stageTooltip) {
+                    stageTooltip.classList.add('opacity-0');
+                    setTimeout(() => stageTooltip.classList.add('hidden'), 300);
+                }
+            };
+        }
     }
 
     function updateStageTooltip(stage) {

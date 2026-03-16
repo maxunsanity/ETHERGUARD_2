@@ -69,8 +69,8 @@
         </div>
 
         <!-- Global Sector Tooltip -->
-        <div id="sector-tooltip" class="fixed z-[60] pointer-events-none opacity-0 transition-opacity duration-300 w-96">
-            <div class="cyber-panel p-5 border border-cyber-neonBlue/50 bg-cyber-dark/98 backdrop-blur-3xl shadow-[0_0_30px_rgba(0,243,255,0.3)]">
+        <div id="sector-tooltip" class="fixed inset-0 z-[60] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+            <div class="cyber-panel p-5 border border-cyber-neonBlue/50 bg-cyber-dark/98 backdrop-blur-3xl shadow-[0_0_30px_rgba(0,243,255,0.3)] w-full max-w-sm" onclick="event.stopPropagation()">
                 <div id="tooltip-boss-area" class="flex gap-4 mb-4 pb-4 border-b border-white/10">
                     <div id="tooltip-boss-image" class="w-20 h-20 bg-gray-900 rounded border border-cyber-neonPink/40 flex items-center justify-center shrink-0 relative overflow-hidden">
                         <!-- Placeholder face logic will be in app.js -->
@@ -116,6 +116,11 @@
                         </div>
                     </div>
                 </div>
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-4 pt-4 border-t border-white/10 shrink-0 pointer-events-auto">
+                    <button id="btn-close-sector-modal" class="flex-1 py-3 bg-gray-800 text-gray-400 font-bold tracking-widest hover:bg-gray-700 transition-all uppercase text-xs rounded z-50 relative">CLOSE</button>
+                    <button id="btn-enter-sector" class="flex-[2] py-3 bg-cyber-neonBlue/20 text-cyber-neonBlue border border-cyber-neonBlue font-black tracking-widest hover:bg-cyber-neonBlue hover:text-black transition-all shadow-[0_0_15px_rgba(0,243,255,0.3)] uppercase text-xs rounded z-50 relative pointer-events-auto">ENTER SECTOR</button>
+                </div>
             </div>
         </div>
     </div>
@@ -140,8 +145,8 @@
         </div>
 
         <!-- Global Stage Tooltip -->
-        <div id="stage-tooltip" class="fixed z-[60] pointer-events-none opacity-0 transition-opacity duration-300 w-[28rem]">
-            <div class="cyber-panel p-5 border border-cyber-neonPink/50 bg-cyber-dark/98 backdrop-blur-3xl shadow-[0_0_30px_rgba(255,0,60,0.2)]">
+        <div id="stage-tooltip" class="fixed inset-0 z-[60] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+            <div class="cyber-panel p-5 border border-cyber-neonPink/50 bg-cyber-dark/98 backdrop-blur-3xl shadow-[0_0_30px_rgba(255,0,60,0.2)] w-full max-w-lg" onclick="event.stopPropagation()">
                 <div class="flex gap-4 mb-4 pb-4 border-b border-white/10">
                     <div id="stage-tooltip-target-image" class="w-24 h-24 bg-gray-900 rounded border border-cyber-neonBlue/40 flex items-center justify-center shrink-0 relative overflow-hidden">
                         <!-- Placeholder face logic will be in app.js -->
@@ -188,6 +193,12 @@
                             <!-- Rewards will be injected here -->
                         </div>
                     </div>
+                </div>
+                
+                <!-- Stage Action Buttons -->
+                <div class="flex gap-3 mt-4 pt-4 border-t border-white/10 shrink-0 pointer-events-auto">
+                    <button id="btn-close-stage-modal" class="flex-1 py-3 bg-gray-800 text-gray-400 font-bold tracking-widest hover:bg-gray-700 transition-all uppercase text-xs rounded z-50 relative">CANCEL</button>
+                    <button id="btn-start-quest" class="flex-[2] py-3 bg-cyber-neonPink/20 text-cyber-neonPink border border-cyber-neonPink font-black tracking-widest hover:bg-cyber-neonPink hover:text-white transition-all shadow-[0_0_15px_rgba(255,0,60,0.3)] uppercase text-xs rounded z-50 relative pointer-events-auto">START OPERATION</button>
                 </div>
             </div>
         </div>
