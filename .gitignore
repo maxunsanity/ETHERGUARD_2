@@ -16,3 +16,12 @@ tmp/
 # 백업 파일
 *.bak
 *.swp
+
+# Node.js
+node_modules/
+
+# Capacitor / Android Build
+android/app/build/
+android/.gradle/
+android/local.properties
+android/app/src/main/assets/public/
